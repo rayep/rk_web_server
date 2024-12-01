@@ -13,14 +13,14 @@ program.version("1.0.0").name("rkwebserver").description("A Simple HTTP/HTTPS se
 
 httpServerMode.action((dir, options) => {
   options.mode = 'http'
-  let HTTPServer = R.pipe(CheckInput, ProcessInput, createServer, startServer);
-  HTTPServer({ dir, options });
+  let HTTP_Server = R.pipe(CheckInput, ProcessInput, createServer, startServer);
+  HTTP_Server({ dir, options });
 });
 
 httpsServerMode.action((dir, options) => {
   options.mode = 'https'
-  let HTTPSServer = R.pipe(CheckInput, ProcessInput, createSecureServer, startSecureServer);
-  HTTPSServer({ dir, options });
+  let HTTPS_Server = R.pipe(CheckInput, ProcessInput, createSecureServer, startSecureServer);
+  HTTPS_Server({ dir, options });
 });
 
 program.addCommand(httpServerMode).addCommand(httpsServerMode).parse();
