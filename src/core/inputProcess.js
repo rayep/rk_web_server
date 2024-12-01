@@ -17,11 +17,16 @@ const checkRoutes = R.unless(checkRoutesPredicate, RoutesInvalidError);
 
 export const checkRequiredArgsForHTTPS = R.ifElse(certKeyPathLookup, R.identity, RequiredError("For HTTPS mode, --cert-path & --key-path arguments"));
 
+function processConfigHostPort(args){
+  let {configs: {host, port}} = args
+  return host ? port ? {...args, host, port} : {...args, host} : port ? {...args, port} : {...args}
+}
+
 function processConfigCertKeyPath(args) {
   let {
     configs: { certPath, keyPath },
   } = args;
-  return { ...args, ...args.configs, certPath: FileChecker("SSL Certificate in Config")(certPath), keyPath: FileChecker("Private Key in Config")(keyPath) };
+  return { ...args, certPath: FileChecker("SSL Certificate in Config")(certPath), keyPath: FileChecker("Private Key in Config")(keyPath) };
 } //overwrite args from cli
 
 const processCertKeyPath = R.ifElse(
@@ -40,4 +45,4 @@ function processRoutes(args) {
   return { ...args, routes: R.pipe(JSONReader("Routes Config"), R.when(checkIfNotEmpty, R.map(checkRoutes)))(routePath) };
 }
 
-export const ProcessInput = R.pipe(processConfig, processCertKeyPath, processRoutes);
+export const ProcessInput = R.pipe(processConfig, processCertKeyPath, processConfigHostPort, processRoutes);
