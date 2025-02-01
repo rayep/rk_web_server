@@ -19,7 +19,7 @@ const addLogging = (args) => {
   let { app, log } = args;
   if (log) {
     morgan.token("protocol", (req, res) => req.protocol);
-    app.use(morgan(":method :protocol://:req[host]:url HTTP/:http-version - :status"));
+    app.use(morgan(":remote-addr - :method :protocol://:req[host]:url HTTP/:http-version - :status"));
   }
   return { ...args, app };
 };
@@ -46,6 +46,12 @@ const addRoutes = (args) => {
   return { ...args, app };
 };
 
+const addOptionTrustProxy = (args) => {
+  let { app } = args;
+  app.set("trust proxy", true);
+  return { ...args, app };
+}
+
 const createHttpsServer = (args) => {
   let { app, cert, key } = args;
   return { ...args, server: https.createServer({ cert, key }, app) };
@@ -65,6 +71,6 @@ export const startServer = (args) => {
   });
 };
 
-export const createServer = R.pipe(createExpressApp, addLogging, addStaticServe, addRoutes);
+export const createServer = R.pipe(createExpressApp, addLogging, addStaticServe, addRoutes, addOptionTrustProxy);
 
 export const createSecureServer = R.pipe(checkRequiredArgsForHTTPS, createHttpsServerOptions, createServer, createHttpsServer);
