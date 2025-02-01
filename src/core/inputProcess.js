@@ -6,6 +6,9 @@ import { RequiredError, RoutesInvalidError } from "../shared/errors.js";
 
 const certKeyPathLookup = (obj) => !!(propLookup("certPath")(obj) && propLookup("keyPath")(obj));
 
+const checkConfigHost = (args) => propLookup("host")(args.configs);
+const checkConfigPort = (args) => propLookup("port")(args.configs);
+
 const checkRoutesPredicate = R.where({
   method: R.includes(R.__, ["get", "post", "delete", "put"]),
   path: checkIfNotEmpty,
@@ -18,8 +21,10 @@ const checkRoutes = R.unless(checkRoutesPredicate, RoutesInvalidError);
 export const checkRequiredArgsForHTTPS = R.ifElse(certKeyPathLookup, R.identity, RequiredError("For HTTPS mode, --cert-path & --key-path arguments"));
 
 function processConfigHostPort(args){
-  let {configs: {host, port}} = args
-  return host ? port ? {...args, host, port} : {...args, host} : port ? {...args, port} : {...args}
+  return R.pipe(
+    R.when(checkConfigHost, (args)=>({...args, host: args.configs.host})),
+    R.when(checkConfigPort, (args)=>({...args, port: args.configs.port}))
+  )(args)
 }
 
 function processConfigCertKeyPath(args) {
